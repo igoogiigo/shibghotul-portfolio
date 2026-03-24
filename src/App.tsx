@@ -181,7 +181,25 @@ const DATA = {
       icon: "Gamepad2",
       tech: ["UI/UX", "React", "Framer Motion"]
     }
-  ] as LabProject[]
+  ] as LabProject[],
+  enterpriseProjects: [
+    {
+      title: "CCTV Sentinel Dashboard",
+      category: "AI-Assisted Dev / Automation",
+      desc: "Automated monitoring system for branch CCTV status using Google AppScript and Looker Studio. Reduced manual checking time by 85%.",
+      link: "#",
+      tech: ['Google AppScript', 'Looker Studio', 'GSheets API', 'Vibe Coding'],
+      type: 'featured'
+    },
+    {
+      title: "RCA LogBook & SOP Flow",
+      category: "Process Design / Documentation",
+      desc: "Standardized L2 support workflows at Telkom Indonesia. Created interactive SOP flows in Figma and a strategic knowledge base for rapid incident resolution.",
+      link: "#",
+      tech: ['Figma', 'Documentation', 'Process Design'],
+      type: 'documentation'
+    }
+  ]
 };
 
 // --- Components ---
@@ -192,7 +210,7 @@ const SectionHeading = ({ children, subtitle }: { children: React.ReactNode, sub
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="text-4xl md:text-5xl font-display font-bold tracking-tight mb-4"
+      className="text-3xl md:text-5xl font-display font-bold tracking-tight mb-4"
     >
       {children}
     </motion.h2>
@@ -222,18 +240,18 @@ const ExperienceCard: React.FC<{ exp: Experience, index: number }> = ({ exp, ind
     <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
       <div>
         <h3 className="text-xl font-bold font-display">{exp.role}</h3>
-        <p className="text-accent font-medium">{exp.company}</p>
+        <p className="text-accent font-medium text-sm">{exp.company}</p>
       </div>
       <div className="text-sm text-gray-500 mt-1 md:mt-0">
         <span className="block md:text-right">{exp.period}</span>
         <span className="block md:text-right flex items-center md:justify-end">
-          <MapPin size={12} className="mr-1" /> {exp.location}
+          <MapPin size={14} className="mr-1" /> {exp.location}
         </span>
       </div>
     </div>
-    <ul className="space-y-2">
+    <ul className="space-y-3">
       {exp.description.map((item, i) => (
-        <li key={i} className="text-gray-600 dark:text-gray-400 flex items-start">
+        <li key={i} className="text-gray-600 dark:text-gray-400 text-base flex items-start">
           <ChevronRight size={16} className="mt-1 mr-2 text-accent shrink-0" />
           <span>{item}</span>
         </li>
@@ -243,9 +261,17 @@ const ExperienceCard: React.FC<{ exp: Experience, index: number }> = ({ exp, ind
 );
 
 export default function App() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) return savedTheme === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [activeProjectTab, setActiveProjectTab] = useState<'enterprise' | 'lab'>('enterprise');
   
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
@@ -267,13 +293,19 @@ export default function App() {
     };
     window.addEventListener('mousemove', handleMouseMove);
 
-    // Check system preference
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDarkMode(true);
-    }
+    // Listen for system theme changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      // Only update if user hasn't manually set a preference
+      if (!localStorage.getItem('theme')) {
+        setIsDarkMode(e.matches);
+      }
+    };
+    mediaQuery.addEventListener('change', handleChange);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      mediaQuery.removeEventListener('change', handleChange);
     };
   }, []);
 
@@ -284,6 +316,18 @@ export default function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => {
+      const newMode = !prev;
+      try {
+        localStorage.setItem('theme', newMode ? 'dark' : 'light');
+      } catch (e) {
+        console.error('LocalStorage is not accessible', e);
+      }
+      return newMode;
+    });
+  };
 
   const navLinks = [
     { name: 'About', href: '#about' },
@@ -329,8 +373,9 @@ export default function App() {
               </a>
             ))}
             <button 
-              onClick={() => setIsDarkMode(!isDarkMode)}
+              onClick={toggleDarkMode}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -339,8 +384,9 @@ export default function App() {
           {/* Mobile Toggle */}
           <div className="md:hidden flex items-center space-x-4">
             <button 
-              onClick={() => setIsDarkMode(!isDarkMode)}
+              onClick={toggleDarkMode}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -499,171 +545,200 @@ export default function App() {
         </div>
       </section>
 
-      {/* Featured Projects Section */}
+      {/* Projects Section */}
       <section id="projects" className="py-32 px-6">
         <div className="max-w-7xl mx-auto">
-          <SectionHeading subtitle="Innovative solutions built to streamline technical operations and monitoring.">
-            Featured Projects
-          </SectionHeading>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Project 1: CCTV Sentinel */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="lg:col-span-7 group relative bg-gray-900 rounded-[3rem] overflow-hidden border border-gray-800"
-            >
-              <div className="p-12 h-full flex flex-col justify-between relative z-10">
-                <div>
-                  <div className="flex items-center space-x-3 mb-6">
-                    <span className="px-3 py-1 bg-accent/20 text-accent text-[10px] font-bold uppercase tracking-widest rounded-full border border-accent/30">
-                      AI-Assisted Dev
-                    </span>
-                    <span className="px-3 py-1 bg-white/10 text-white/60 text-[10px] font-bold uppercase tracking-widest rounded-full border border-white/10">
-                      Automation
-                    </span>
-                  </div>
-                  <h3 className="text-4xl font-display font-bold text-white mb-4 group-hover:text-accent transition-colors">
-                    CCTV Sentinel Dashboard
-                  </h3>
-                  <p className="text-gray-400 text-lg max-w-md mb-8">
-                    Automated monitoring system for branch CCTV status using Google AppScript and Looker Studio. 
-                    Reduced manual checking time by 85%.
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-3 mb-8">
-                    {['Google AppScript', 'Looker Studio', 'GSheets API', 'Vibe Coding'].map(tag => (
-                      <span key={tag} className="text-xs font-mono text-gray-500">{tag}</span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-6">
-                  <div className="flex items-center text-white font-bold group-hover:translate-x-2 transition-transform">
-                    View Case Study <ArrowUpRight size={20} className="ml-2" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Decorative Mockup Element */}
-              <div className="absolute bottom-0 right-0 w-2/3 h-2/3 bg-gradient-to-tl from-accent/20 to-transparent rounded-tl-[3rem] border-t border-l border-white/10 overflow-hidden translate-x-10 translate-y-10 group-hover:translate-x-5 group-hover:translate-y-5 transition-transform">
-                <div className="p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="w-20 h-2 bg-white/20 rounded-full" />
-                    <div className="w-8 h-8 bg-accent rounded-full animate-pulse" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="h-24 bg-white/5 rounded-2xl border border-white/10" />
-                    <div className="h-24 bg-white/5 rounded-2xl border border-white/10" />
-                  </div>
-                  <div className="h-32 bg-white/5 rounded-2xl border border-white/10" />
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Project 2: RCA LogBook */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="lg:col-span-5 group relative bg-accent rounded-[3rem] overflow-hidden"
-            >
-              <div className="p-12 h-full flex flex-col justify-between relative z-10 text-white">
-                <div>
-                  <div className="mb-6">
-                    <Layout size={40} className="opacity-50" />
-                  </div>
-                  <h3 className="text-3xl font-display font-bold mb-4">
-                    RCA LogBook & SOP Flow
-                  </h3>
-                  <p className="text-white/80 mb-8">
-                    Standardized L2 support workflows at Telkom Indonesia. Created interactive SOP flows in Figma 
-                    and a strategic knowledge base for rapid incident resolution.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {['Figma', 'Documentation', 'Process Design'].map(tag => (
-                      <span key={tag} className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-12">
-                  <div className="inline-flex items-center font-bold border-b-2 border-white/30 hover:border-white transition-all pb-1">
-                    Explore Documentation <ChevronRight size={16} className="ml-1" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Decorative Element */}
-              <div className="absolute -bottom-10 -right-10 opacity-20 group-hover:scale-110 transition-transform">
-                <MessageSquare size={200} />
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* AI Innovation Lab Section */}
-      <section id="lab" className="py-32 px-6 bg-gray-50 dark:bg-gray-900/50">
-        <div className="max-w-7xl mx-auto">
-          <SectionHeading subtitle="A collection of experimental digital products built using Vibe Coding and AI-assisted development.">
-            AI Innovation Lab
-          </SectionHeading>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {DATA.labProjects.map((project, idx) => (
-              <motion.div
-                key={project.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="group p-8 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 hover:border-accent/30 transition-all hover:shadow-2xl hover:shadow-accent/5"
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <SectionHeading subtitle="A showcase of enterprise-level support systems and innovative AI-powered digital products.">
+              Project Portfolio
+            </SectionHeading>
+            
+            <div className="flex p-1 bg-gray-100 dark:bg-gray-900 rounded-2xl w-fit">
+              <button 
+                onClick={() => setActiveProjectTab('enterprise')}
+                className={cn(
+                  "px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
+                  activeProjectTab === 'enterprise' 
+                    ? "bg-white dark:bg-gray-800 text-accent shadow-sm" 
+                    : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                )}
               >
-                <div className="flex justify-between items-start mb-8">
-                  <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl group-hover:bg-accent group-hover:text-white transition-colors">
-                    {project.icon === 'Wallet' && <Wallet size={24} />}
-                    {project.icon === 'Languages' && <Languages size={24} />}
-                    {project.icon === 'Sparkles' && <Sparkles size={24} />}
-                    {project.icon === 'School' && <School size={24} />}
-                    {project.icon === 'Gamepad2' && <Gamepad2 size={24} />}
-                  </div>
-                  <a 
-                    href={project.link} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="p-2 text-gray-400 hover:text-accent transition-colors"
-                  >
-                    <ArrowUpRight size={20} />
-                  </a>
-                </div>
-
-                <div className="mb-6">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2 block">
-                    {project.category}
-                  </span>
-                  <h3 className="text-2xl font-display font-bold mb-3 group-hover:text-accent transition-colors">
-                    {project.title}
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    {project.desc}
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-2 mt-auto">
-                  {project.tech.map(t => (
-                    <span key={t} className="text-[10px] font-mono text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
+                Enterprise
+              </button>
+              <button 
+                onClick={() => setActiveProjectTab('lab')}
+                className={cn(
+                  "px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
+                  activeProjectTab === 'lab' 
+                    ? "bg-white dark:bg-gray-800 text-accent shadow-sm" 
+                    : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                )}
+              >
+                AI Innovation Lab
+              </button>
+            </div>
           </div>
+
+          <AnimatePresence mode="wait">
+            {activeProjectTab === 'enterprise' ? (
+              <motion.div 
+                key="enterprise"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+              >
+                {/* Project 1: CCTV Sentinel */}
+                <motion.div 
+                  className="lg:col-span-7 group relative bg-gray-900 rounded-[3rem] overflow-hidden border border-gray-800"
+                >
+                  <div className="p-12 h-full flex flex-col justify-between relative z-10">
+                    <div>
+                      <div className="flex items-center space-x-3 mb-6">
+                        <span className="px-3 py-1 bg-accent/20 text-accent text-[10px] font-bold uppercase tracking-widest rounded-full border border-accent/30">
+                          AI-Assisted Dev
+                        </span>
+                        <span className="px-3 py-1 bg-white/10 text-white/60 text-[10px] font-bold uppercase tracking-widest rounded-full border border-white/10">
+                          Automation
+                        </span>
+                      </div>
+                      <h3 className="text-4xl font-display font-bold text-white mb-4 group-hover:text-accent transition-colors">
+                        CCTV Sentinel Dashboard
+                      </h3>
+                      <p className="text-gray-400 text-lg max-w-md mb-8">
+                        Automated monitoring system for branch CCTV status using Google AppScript and Looker Studio. 
+                        Reduced manual checking time by 85%.
+                      </p>
+                      
+                      <div className="flex flex-wrap gap-3 mb-8">
+                        {['Google AppScript', 'Looker Studio', 'GSheets API', 'Vibe Coding'].map(tag => (
+                          <span key={tag} className="text-xs font-mono text-gray-500">{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-6">
+                      <div className="flex items-center text-white font-bold group-hover:translate-x-2 transition-transform">
+                        View Case Study <ArrowUpRight size={20} className="ml-2" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Decorative Mockup Element */}
+                  <div className="absolute bottom-0 right-0 w-2/3 h-2/3 bg-gradient-to-tl from-accent/20 to-transparent rounded-tl-[3rem] border-t border-l border-white/10 overflow-hidden translate-x-10 translate-y-10 group-hover:translate-x-5 group-hover:translate-y-5 transition-transform">
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="w-20 h-2 bg-white/20 rounded-full" />
+                        <div className="w-8 h-8 bg-accent rounded-full animate-pulse" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="h-24 bg-white/5 rounded-2xl border border-white/10" />
+                        <div className="h-24 bg-white/5 rounded-2xl border border-white/10" />
+                      </div>
+                      <div className="h-32 bg-white/5 rounded-2xl border border-white/10" />
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Project 2: RCA LogBook */}
+                <motion.div 
+                  className="lg:col-span-5 group relative bg-accent rounded-[3rem] overflow-hidden"
+                >
+                  <div className="p-12 h-full flex flex-col justify-between relative z-10 text-white">
+                    <div>
+                      <div className="mb-6">
+                        <Layout size={40} className="opacity-50" />
+                      </div>
+                      <h3 className="text-3xl font-display font-bold mb-4">
+                        RCA LogBook & SOP Flow
+                      </h3>
+                      <p className="text-white/80 mb-8">
+                        Standardized L2 support workflows at Telkom Indonesia. Created interactive SOP flows in Figma 
+                        and a strategic knowledge base for rapid incident resolution.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {['Figma', 'Documentation', 'Process Design'].map(tag => (
+                          <span key={tag} className="px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-12">
+                      <div className="inline-flex items-center font-bold border-b-2 border-white/30 hover:border-white transition-all pb-1">
+                        Explore Documentation <ChevronRight size={16} className="ml-1" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Decorative Element */}
+                  <div className="absolute -bottom-10 -right-10 opacity-20 group-hover:scale-110 transition-transform">
+                    <MessageSquare size={200} />
+                  </div>
+                </motion.div>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="lab"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              >
+                {DATA.labProjects.map((project, idx) => (
+                  <motion.div
+                    key={project.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="group p-8 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 hover:border-accent/30 transition-all hover:shadow-2xl hover:shadow-accent/5"
+                  >
+                    <div className="flex justify-between items-start mb-8">
+                      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl group-hover:bg-accent group-hover:text-white transition-colors">
+                        {project.icon === 'Wallet' && <Wallet size={24} />}
+                        {project.icon === 'Languages' && <Languages size={24} />}
+                        {project.icon === 'Sparkles' && <Sparkles size={24} />}
+                        {project.icon === 'School' && <School size={24} />}
+                        {project.icon === 'Gamepad2' && <Gamepad2 size={24} />}
+                      </div>
+                      <a 
+                        href={project.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 text-gray-400 hover:text-accent transition-colors"
+                      >
+                        <ArrowUpRight size={20} />
+                      </a>
+                    </div>
+
+                    <div className="mb-6">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2 block">
+                        {project.category}
+                      </span>
+                      <h3 className="text-2xl font-display font-bold mb-3 group-hover:text-accent transition-colors">
+                        {project.title}
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                        {project.desc}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mt-auto">
+                      {project.tech.map(t => (
+                        <span key={t} className="text-[10px] font-mono text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 
@@ -717,7 +792,7 @@ export default function App() {
                 ))}
               </div>
               
-              <div className="mt-20">
+              <div className="mt-16">
                 <h3 className="text-2xl font-bold font-display mb-12">Internship Experience</h3>
                 <div className="space-y-4">
                   {DATA.internships.map((exp, i) => (
@@ -729,7 +804,7 @@ export default function App() {
             
             <div className="lg:col-span-4">
               <div className="sticky top-32 p-8 bg-accent text-white rounded-3xl">
-                <h3 className="text-2xl font-bold font-display mb-6">Key Achievements</h3>
+                <h3 className="text-xl font-bold font-display mb-6">Key Achievements</h3>
                 <ul className="space-y-6">
                   <li className="flex items-start">
                     <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center shrink-0 mr-4">
