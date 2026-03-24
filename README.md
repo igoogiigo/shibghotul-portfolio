@@ -1,20 +1,89 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🚀 Shibghotul Portfolio
 
-# Run and deploy your AI Studio app
+Modern personal portfolio website built using **Next.js, TypeScript, Tailwind CSS, Framer Motion, and Lenis**.
 
-This contains everything you need to run your app locally.
+This project showcases real experience in **IT Support & Application Support**, fully based on actual CV data (no dummy content).
 
-View your app in AI Studio: https://ai.studio/apps/18e1a0b4-3399-4122-a2ac-f0b8bbbb9a8f
+---
 
-## Run Locally
+## ✨ Features
 
-**Prerequisites:**  Node.js
+- ⚡ Modern UI & responsive design
+- 🎬 Smooth animations (Framer Motion)
+- 🌊 Smooth scrolling (Lenis)
+- 🌙 Clean dark theme
+- 📄 CV-driven content (no fake data)
+- 📱 Mobile-friendly layout
 
+---
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🧑‍💻 Tech Stack
+
+- Next.js (App Router)
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- Lenis Smooth Scroll
+
+---
+
+## 📂 Project Structure
+
+```
+app/
+ ├── page.tsx
+ ├── layout.tsx
+components/
+styles/
+public/
+```
+
+---
+
+## ⚙️ Installation & Run Locally
+
+```bash
+# clone repo
+git clone https://github.com/your-username/shibghotul-portfolio.git
+
+# masuk folder
+cd shibghotul-portfolio
+
+# install dependencies
+npm install
+
+# run dev server
+npm run dev
+```
+
+Open http://localhost:3000
+
+---
+
+## 🚀 Deployment (Vercel)
+
+1. Push project ke GitHub
+2. Login ke https://vercel.com
+3. Klik **New Project**
+4. Import repo
+5. Klik **Deploy**
+
+Done 🎉
+
+---
+
+## 📬 Contact
+
+- Email: halo.shibghotul@gmail.com
+- LinkedIn: https://www.linkedin.com/in/halo-shibghotul
+
+---
+
+## 📌 Notes
+
+This portfolio is built strictly based on real CV data.
+If certain sections are missing, it means the data is not available — nothing is fabricated.
+
+---
+
+⭐ If you like this project, feel free to star the repo!
